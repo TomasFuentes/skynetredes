@@ -19,10 +19,6 @@ Además se hizó una funcion ```Message read_message(unsigned char* msg)``` el c
 ##### server.c y client.c
 Estos archivos representan al servidor y al cliente. Ambos tienen las siguientes funciones de envio y recibo de paquetes:
 
-- ```void write_msg(int sockfd, unsigned char * msg)```: Esta funcion le envia **msg* al socket *sockfd*.
-- ```void recv_msg(int sockfd, unsigned char * msg)```: Esta función modifica el buffer *msg* con el mensaje recivido del socket *sockfd*.
-
-Ambas funciones trabajan siguiendo el protocolo pedido.
 
 
 
