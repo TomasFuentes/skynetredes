@@ -23,6 +23,14 @@ void write_server_msg(int sockfd, unsigned char * msg){
     printf("Se envió un mensaje al servidor: id = %x, payload_len = %x\n", msg[0], msg[1]);
 }
 
+void sendSignal(int socket, char* package){
+  // Obtenemos el largo del payload para saber qué tamaño tiene el paquete y cuántos bytes debe enviar mi socket
+  int payloadSize = package[1];
+  send(socket, package, 2 + payloadSize, 0);
+}
+
+
+
 int initializeClient(char* ip, int port){
 	int clientSocket;
   //char buffer[1024];
@@ -66,7 +74,9 @@ void receiveSignalClient(int socket){
     printf("The PayloadSize is: %d\n", payloadSize);
     // Recibimos el resto del paquete, según el payloadSize. Lo guardamos en un puntero de caracteres, porque no es necesario modificarlo
     char *content = malloc(payloadSize);
-    recv(socket, content, payloadSize, 0);
+    if (payloadSize != 0) {
+        recv(socket, content, payloadSize, 0);
+    }
     printf("The Content is: %s\n", content);
     // Aqui se las ingenian para ver como retornan todo. Puden retornar el paquete y separarlo afuera, o retornar una struct.
     Message mensaje = read_message(ID,payloadSize,content);
@@ -75,12 +85,14 @@ void receiveSignalClient(int socket){
     }
     else if (mensaje.id == 0x03){
         printf("ENTREGAR NICKNAME");
-        char* nickname;
+        char nickname[255];
         scanf("%s", nickname);
+        printf("%s\n", nickname);
         sendMessage(socket_client,generar_mensaje(0x04,nickname));
     }
     else if (mensaje.id == 0x05){
       printf("OPONENTE ENCONTRADO");
+      printf("%s\n", content);
     }
     else if (mensaje.id == 0x06){
       printf("COMENZANDO JUEGO");
@@ -133,29 +145,19 @@ int main(int argc, char *argv[])
 
     /* Connect to the server. */
     socket_client = initializeClient(IP, port);
+    /* Enviar mensaje start connection. */
+    sendMessage(socket_client,generar_mensaje(0x01,"Payload: 0"));
+
+
+
+
     /* Make sure host and port are specified. */
     if (argc < 3) {
        fprintf(stderr,"usage %s hostname port\n", argv[0]);
        exit(0);
     }
-
-    /* The client ID is the first thing we receive after connecting. */
-    //    int id = recv_int(sockfd);
-
-
     unsigned char msg[1024];
-
     printf("Poker \n------------\n");
-
-    // /* Wait for the game to start. */
-    // do {
-    //     recv_msg(sockfd, msg);
-    //     if (!strcmp(msg, "HLD"))
-    //         printf("Waiting for a second player...\n");
-    // } while ( strcmp(msg, "SRT") );
-
-    /* The game has begun. */
-    // printf("Comienza el juego !!\n");
     char nickname[256]; // nombre del jugador
     char * opp_nickname; // nombre del contrincante
     int balance; // saldo del jugador
@@ -172,138 +174,8 @@ int main(int argc, char *argv[])
 
     while(1) {
         printf("waiting\n");
-       // recv_msg(sockfd, msg);
-        message = read_message(msg);
-        printf("%d\n", message.id);
-
-        if(message.id == 2){ // connection established
-            printf("Connected to server\n");
-        }
-        //else if(message.id == 3){ // ask nickname
-            //printf("Enter your nickname: ");
-            //scanf("%s", nickname);
-            //printf("\n");
-            //write_server_msg(sockfd, generar_mensaje(4, nickname));
-        // }
-        else if(message.id == 5){ // opponent found
-            opp_nickname = "opponent";
-            printf("Opponent found: %s\n", opp_nickname);
-        }
-        if(message.id == 6){ // initial pot
-            printf("Initial pot $%d\n", balance);
-        }
-        else if(message.id == 7){ // game start
-            printf("Starting game\n");
-        }
-        else if(message.id == 8){ // start round
-            printf("Starting game\n");
-            printf("Current pot: $%d\n", balance);
-        }
-        else if(message.id == 9){ // initial bet
-            printf("Initial bet: $10\n");
-        }
-        else if(message.id == 10){ // 5 cards
-            printf("Here are your cards:\n");
-            // guardarlas en hand
-            for(int i=0; i<10; i+=2){
-                printf("\t");
-                print_card(hand[i], hand[i+1]);
-            }
-        }
-        else if(message.id == 11){ // who's first
-            if (first == 1){
-                printf("You go first\n");
-            }
-            else if (first == 2){
-                printf("Opponent goes first\n");
-            }
-        }
-        else if(message.id == 12){ // get cards to change
-            printf("You can now change your cards\n");
-            int change[5];
-            int cards_to_change[10];
-
-            for(int i=0; i<5; i++){
-                char answer;
-                printf("Do you want to change ");
-                print_card(hand[2*i], hand[2*i+1]);
-                printf("? (y/n)\n");
-                scanf(" %c", &answer);
-                change[i] = answer;
-                if (answer == 'y'){
-                    change[i] = 1;
-                }
-                else{
-                    change[i] = 0;
-                }
-            }
-            for (int i=0; i<5; i++){
-                if (change[i] == 1){
-                    cards_to_change[2*i] = hand[2*i];
-                    cards_to_change[2*i+1] = hand[2*i+1];
-                }
-                else{
-                    cards_to_change[2*i] = 0;
-                    cards_to_change[2*i+1] = 0;
-                }
-            }
-            // <mandar mensaje id 13: return cards to change>
-            char change_string [256];
-            array_to_string(cards_to_change, change_string, 10);
-            //write_server_msg(sockfd, generar_mensaje(13, change_string));
-        }
-        else if(message.id == 14){ // get bet
-            printf("Available bets: \n");
-            for(int i=0; i<message_len; i++){
-                printf("%d, %s\n", bets[i]-1, bet_mapping[bets[i]-1]);
-            }
-            int answer;
-            printf("Choose one:");
-            scanf(" %d", &answer);
-            char str[5];
-            sprintf(str, "%d", answer);
-            // <mandar mensaje id 15: return bet>
-            //write_server_msg(sockfd, generar_mensaje(15, str));
-        }
-        else if(message.id == 16){ // error bet
-            printf("Bet error\n");
-        }
-        else if(message.id == 17){ // ok bet
-            printf("Ok bet\n");
-        }
-        else if(message.id == 18){ // end round
-            printf("End of round\n");
-        }
-        else if(message.id == 19){ // show opponent cards
-            // opp_hand =
-            printf("Opponent's cards: \n");
-            for (int i=0; i< 5; i++){
-                print_card(opp_hand[2*i], opp_hand[2*i+1]);
-            }
-        }
-        else if(message.id == 20){ // winner/loser
-            if (winner == 1){
-                printf("You won! :D\n");
-            }
-            else{
-                printf("You lost :(\n");
-            }
-        }
-        else if(message.id == 21){ // update pot
-            // actualizar balance
-            printf("Your new balance is %d\n", balance );
-        }
-        else if(message.id == 22){ // game end
-            printf("Game over\n");
-        }
-        else if(message.id == 23){ // image
-            printf("Received image\n");
-        }
-        else if(message.id == 24){ // error not implemented
-            printf("ERROR: not implemented\n");
-        }
-
-
+        // RECIBE SEÑAL DE SERVIDOR
+        receiveSignalClient(socket_client);
     }
 
     /* Close server socket and exit. */

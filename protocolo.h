@@ -260,11 +260,11 @@ Message message_init(int id, char* texto){
     }
   }
   else if(message.id == 7){
-    message.int_array[0] =ChartoInt(msg[0]);
-    message.int_array[1] =ChartoInt(msg[1]);
+    message.int_array[0] = msg[2];
+    message.int_array[1] = msg[3];
   }
   else if (message.id == 8 || message.id ==14|| message.id == 16){
-    message.int_content = ChartoInt(msg);
+    message.int_content = msg[2];
   }
   return message;
 }
@@ -280,11 +280,11 @@ Message read_message(unsigned char id, unsigned char payload, unsigned char* msg
     }
   }
   else if(message.id == 7){
-    message.int_array[0] =ChartoInt(msg[0]);
-    message.int_array[1] =ChartoInt(msg[1]);
+    message.int_array[0] = msg[0];
+    message.int_array[1] = msg[1];
   }
   else if (message.id == 8 || message.id ==14|| message.id == 16){
-    message.int_content = ChartoInt(msg[1]);
+    message.int_content = msg[1];
   }
   return message;
 }
