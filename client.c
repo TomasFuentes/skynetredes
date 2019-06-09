@@ -62,6 +62,7 @@ int initializeClient(char* ip, int port){
 }
 int color_ficha; // 1: ficha blanca, 2 fichas negras
 int termino_juego = 0;
+int desconeccion = 0;
 void receiveSignalClient(int socket){
     printf("Waiting message... \n");
     // Esperamos a que llegue el primer byte, que corresponde al ID del paquete
@@ -97,6 +98,7 @@ void receiveSignalClient(int socket){
     }
     else if (mensaje.id == 0x06){
       printf("COMENZANDO JUEGO");
+      termino_juego = 0;
 
     }
     else if (mensaje.id == 0x07){
@@ -164,6 +166,7 @@ void receiveSignalClient(int socket){
     }
     else if (mensaje.id == 0x12){
         printf("DESCONECCIÓN");
+        desconeccion = 1;
     }
     free(content);
 }
@@ -233,6 +236,9 @@ int main(int argc, char *argv[])
         printf("waiting\n");
         // RECIBE SEÑAL DE SERVIDOR
         receiveSignalClient(socket_client);
+        if (desconeccion == 1){
+            break;
+        }
     }
 
     /* Close server socket and exit. */
