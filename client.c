@@ -116,6 +116,27 @@ void receiveSignalClient(int socket){
     else if (mensaje.id == 0x09){
       printf("TAblERO \n");
       imprimir_tablero(content);
+      int i_actual;
+      int j_actual; 
+      int i_a_poner; 
+      int j_a_poner;
+      char hola[255];
+      printf("Posicion i actual: \n");
+      scanf("%d", &i_actual);
+      printf("Posicion j actual: \n");
+      scanf("%d", &j_actual);
+      printf("Posicion i a ponr: \n");
+      scanf("%d", &i_a_poner);
+      printf("Posicion a a poner: \n");
+      scanf("%d", &j_a_poner);
+      char posiciones_a_mandar[4]; 
+      posiciones_a_mandar[0] = i_actual;
+      posiciones_a_mandar[1] = j_actual;
+      posiciones_a_mandar[2] = i_a_poner;
+      posiciones_a_mandar[3] = j_a_poner;
+      sendMessage(socket_client,generar_mensaje(0x0a,posiciones_a_mandar));
+
+
       //ENDGAME
       
     }
