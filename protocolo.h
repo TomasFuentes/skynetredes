@@ -200,10 +200,9 @@ type_id = 0x10;
 payload = 0x01;
 ret = (unsigned char *)malloc(sizeof(unsigned char) * 3);
 //content = (bool *) texto; // no sabemos si se puede hace reso
-int a = atoi(texto);
 ret[0] = type_id;
 ret[1] = payload;
-ret[2] = a;
+ret[2] = texto[0];
 }
 
 else if (id == 17){// Disconnected

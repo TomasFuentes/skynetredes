@@ -61,6 +61,7 @@ int initializeClient(char* ip, int port){
 	return clientSocket;
 }
 int color_ficha; // 1: ficha blanca, 2 fichas negras
+int termino_juego = 0;
 void receiveSignalClient(int socket){
     printf("Waiting message... \n");
     // Esperamos a que llegue el primer byte, que corresponde al ID del paquete
@@ -115,11 +116,11 @@ void receiveSignalClient(int socket){
     else if (mensaje.id == 0x09){
       printf("TAblERO \n");
       imprimir_tablero(content);
+      if (termino_juego == 0){
       int i_actual;
       int j_actual; 
       int i_a_poner; 
       int j_a_poner;
-      char hola[255];
       printf("Posicion i actual: \n");
       scanf("%d", &i_actual);
       printf("Posicion j actual: \n");
@@ -134,6 +135,7 @@ void receiveSignalClient(int socket){
       posiciones_a_mandar[2] = i_a_poner;
       posiciones_a_mandar[3] = j_a_poner;
       sendMessage(socket_client,generar_mensaje(0x0a,posiciones_a_mandar));
+      }
 
 
       //ENDGAME
@@ -146,10 +148,22 @@ void receiveSignalClient(int socket){
         printf("Jugada VÁLIDA\n");
     }
     else if (mensaje.id == 0x0d){
+        termino_juego = 1;
         printf("Término Partida\n");
     }
     else if (mensaje.id == 0x0e){
         printf("Ganador: %d\n", content[0]);
+    }
+    else if (mensaje.id == 0x0F){
+        printf("ASK NEW GAME: \n ");
+        int respuesta;
+        scanf("%d", &respuesta); // 1 Ó 0..
+        char posiciones_a_mandar[1];
+        posiciones_a_mandar[0] = respuesta;
+        sendMessage(socket_client,generar_mensaje(0x10, posiciones_a_mandar));
+    }
+    else if (mensaje.id == 0x12){
+        printf("DESCONECCIÓN");
     }
     free(content);
 }

@@ -64,6 +64,7 @@ char Nickname2 [255] = "-1";
 int jugada_valida = 1; // 0: si jugada no es válida, 1: jugada válida
 int ganador = 1; // 0: si NO GANO, 1: SI  GANO
 int empate = 0; // 0: No hay empate, 1: sihay empate
+int respuesta_juego = 0;
 void receiveSignal(int socket){
     printf("Waiting message... \n");
     // Esperamos a que llegue el primer byte, que corresponde al ID del paquete
@@ -128,14 +129,10 @@ void receiveSignal(int socket){
     }
     else if (mensaje.id == 0x10){
       printf("Si la respuesta es sí debe agregarlo denuevo como jugador");
-      printf("Respuesta es %d ",mensaje.int_content);
-      //SEND MOVE
+      printf("Respuesta es %d ",content[0]);
+      respuesta_juego = respuesta_juego + content[0];
     }
-    else if (mensaje.id == 0x13){
-      printf("Si la respuesta es sí debe agregarlo denuevo como jugador");
-      printf("Respuesta es %d ",mensaje.int_content);
-      //ENDGAME
-    }
+
     free(content);
 }
 
@@ -159,17 +156,8 @@ void get_clients(int lis_sockfd, int * cli_sockfd)
         if (cli_sockfd[num_conn] < 0)
             /* Horrible things have happened. */
             printf("ERROR accepting a connection from a client.");
-        /* Send the client it's ID. */
-        //write(cli_sockfd[num_conn], &num_conn, sizeof(int));
-        /* Increment the player count. */
-        /* Recibe señal de Star conecction */
         receiveSignal(cli_sockfd[num_conn]);
-        /* Recibe señal de Return Nickname */
         receiveSignal(cli_sockfd[num_conn]);
-        //write_client_msg(cli_sockfd[num_conn], generar_mensaje(2,""));
-        //write_client_msg(cli_sockfd[num_conn], generar_mensaje(3,""));
-        // Recibe mensaje de cliente Start Connection
-        //recv_msg(cli_sockfd[num_conn], msg);
         if (num_conn == 0) {
             /* Send "HLD" to first client to let the user know the server is waiting on a second client. */
         }
@@ -225,25 +213,31 @@ int main(int argc, char *argv[])
     int jugador_actual = 0; // Parte jugando el 1..   (falta aleatorio)
     // crear tablero
     char tablero[64];
-    for(int i = 0; i<8; i++){
-        for (int j = 0; j<8; j++){
-          int par = (i+j)%2;
-          if (par == 0){tablero[i*8 + j] = 1;}
-          else {tablero[i*8 + j] = 2;}
-        }
-      }
     //
-    imprimir_tablero(tablero);
+    //imprimir_tablero(tablero);
     int *cli_sockfd = (int*)malloc(2*sizeof(int)); /* Client sockets */
     // Conexion
+    int jugar_denuevo = 0;
     while (1) {
             memset(cli_sockfd, 0, 2*sizeof(int));
             /* Get two clients connected. */
             get_clients(socket_server, cli_sockfd);
-            // Avisar a los dos clientes que se encontro rival.
+            break;
+          }
+    while (1) {
+      while(1){ 
+            //Avisar a los dos clientes que se encontro rival.
             sendSignal(cli_sockfd[0],generar_mensaje(0x05,Nickname2));
             sendSignal(cli_sockfd[1],generar_mensaje(0x05,Nickname1));
             // NoTIFIAR INICIO JUEGO A CLIENTES.
+            // Se crea tablero
+            for(int i = 0; i<8; i++){
+                for (int j = 0; j<8; j++){
+                  int par = (i+j)%2;
+                  if (par == 0){tablero[i*8 + j] = 1;}
+                  else {tablero[i*8 + j] = 2;}
+                }
+              }
             sendSignal(cli_sockfd[0],generar_mensaje(0x06,"Inicio Juego"));
             sendSignal(cli_sockfd[1],generar_mensaje(0x06,"Inicio Juego"));
             // se mandan puntajes iniciales correspondientes a cada usuario
@@ -255,48 +249,82 @@ int main(int argc, char *argv[])
             break;
         }
     // Juego
-    while(1){
-      // se manda tablero a usuario que corresponde jugar
-      sendSignal(cli_sockfd[jugador_actual],generar_mensaje(0x09,tablero));
-      // Servidor recibe jugada de cliente
-      receiveSignal(cli_sockfd[jugador_actual]);
-      // En funcion de ReceiveSignal se determino si jugada es valida o no, si gano o no, y se actualizo el puntaje
-      //si jugada es invalida, jugada_valida sera igual a 0. Luego se realizan acciones según esta variable
-      if (jugada_valida == 0){
-        sendSignal(cli_sockfd[jugador_actual],generar_mensaje(0x0b,"Jugada inválida"));
-        //se vuelve al principio del loop..
-      }
-      // jugada válida:
-      else{
-        sendSignal(cli_sockfd[jugador_actual],generar_mensaje(0x0c,"Jugada válida"));
-        // se revisa si gano, si no gana, se cambia turno de jugador
-        ganador = 1; // Para probar casos.. después se elimina
-        empate = 0; // Para probar casos.. después se elimina
-        if (ganador == 0){
-          if (jugador_actual == 0){
-            jugador_actual = 1;}
+        while(1){
+          // se manda tablero a usuario que corresponde jugar
+          sendSignal(cli_sockfd[jugador_actual],generar_mensaje(0x09,tablero));
+          // Servidor recibe jugada de cliente
+          receiveSignal(cli_sockfd[jugador_actual]);
+          // En funcion de ReceiveSignal se determino si jugada es valida o no, si gano o no, y se actualizo el puntaje
+          //si jugada es invalida, jugada_valida sera igual a 0. Luego se realizan acciones según esta variable
+          if (jugada_valida == 0){
+            sendSignal(cli_sockfd[jugador_actual],generar_mensaje(0x0b,"Jugada inválida"));
+            //se vuelve al principio del loop..
+          }
+          // jugada válida:
           else{
-            jugador_actual = 0;}
-          // se mandan puntajes a jugadores:
-          sendSignal(cli_sockfd[0],generar_mensaje(0x07,Puntajes));
-          sendSignal(cli_sockfd[1],generar_mensaje(0x07,Puntajes));      
-          // se vuelve a inicio para que comience jugada el jugador correspondiente
-         }
+            sendSignal(cli_sockfd[jugador_actual],generar_mensaje(0x0c,"Jugada válida"));
+            // se revisa si gano, si no gana, se cambia turno de jugador
+            ganador = 1; // Para probar casos.. después se elimina
+            empate = 0; // Para probar casos.. después se elimina
+            if (ganador == 0){
+              if (jugador_actual == 0){
+                jugador_actual = 1;}
+              else{
+                jugador_actual = 0;}
+              // se mandan puntajes a jugadores:
+              sendSignal(cli_sockfd[0],generar_mensaje(0x07,Puntajes));
+              sendSignal(cli_sockfd[1],generar_mensaje(0x07,Puntajes));      
+              // se vuelve a inicio para que comience jugada el jugador correspondiente
+             }
 
-        if (ganador == 1){ 
-          sendSignal(cli_sockfd[0],generar_mensaje(0x0d,"Termino Partida"));
-          sendSignal(cli_sockfd[1],generar_mensaje(0x0d,"Termino Partida"));   
-          // Enviar señal de ganador a jugadores
-          char ganador[1];
-          if (empate == 0){   
-              ganador[0] = 0;  
-          }
-          else{
-            ganador[0] = jugador_actual + 1; // para corresponder numero de enunciado..
-          }
-          sendSignal(cli_sockfd[0],generar_mensaje(0x0e,ganador));
-          sendSignal(cli_sockfd[1],generar_mensaje(0x0e,ganador));    
+            if (ganador == 1){ 
+              // END GAME
+              sendSignal(cli_sockfd[0],generar_mensaje(0x0d,"Termino Partida"));
+              sendSignal(cli_sockfd[1],generar_mensaje(0x0d,"Termino Partida"));   
+              // BoardState
+              sendSignal(cli_sockfd[0],generar_mensaje(0x09,tablero));
+              sendSignal(cli_sockfd[1],generar_mensaje(0x09,tablero));
+              // Enviar señal de ganador a jugadores, empate = 0, no hay empate
+              // GAME WINNER/LOSER
+              char ganador[1];
+              if (empate == 0){   
+                  ganador[0] = 0;  
+               }
+              else{
+                ganador[0] = jugador_actual + 1; // para corresponder numero de enunciado..
+              }
+              sendSignal(cli_sockfd[0],generar_mensaje(0x0e,ganador));
+              sendSignal(cli_sockfd[1],generar_mensaje(0x0e,ganador)); 
+              // SCORES
+              sendSignal(cli_sockfd[0],generar_mensaje(0x07,Puntajes));
+              sendSignal(cli_sockfd[1],generar_mensaje(0x07,Puntajes));  
+              if (ganador == 0){
+                // SE DESCONECTA SIN PREGUNTAR
+                sendSignal(cli_sockfd[0],generar_mensaje(0x12,"DESCONECTA"));
+                sendSignal(cli_sockfd[1],generar_mensaje(0x12,"DESCONECTA"));            
+              } 
+              // ASK NEW GAME
+              else{
+                sendSignal(cli_sockfd[0],generar_mensaje(0x0f,"ASK GAME"));
+                sendSignal(cli_sockfd[1],generar_mensaje(0x0f,"ASK GAME"));  
+                receiveSignal(cli_sockfd[0]);
+                receiveSignal(cli_sockfd[1]);  
+                if (respuesta_juego == 2){ // suma de las respuestas
+                  jugar_denuevo == 1;
+                  respuesta_juego = 0;   
+                }  
+                else{
+                  sendSignal(cli_sockfd[0],generar_mensaje(0x12,"DESCONECTA"));
+                  sendSignal(cli_sockfd[1],generar_mensaje(0x12,"DESCONECTA"));                    
+                }   
+              }
+            }
+        break; }
         }
-        }
+      if (jugar_denuevo == 0){
+        printf("NO\n");
+        break;
       }
+    }
+
 }
