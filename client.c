@@ -60,7 +60,7 @@ int initializeClient(char* ip, int port){
 
 	return clientSocket;
 }
-
+int color_ficha; // 1: ficha blanca, 2 fichas negras
 void receiveSignalClient(int socket){
     printf("Waiting message... \n");
     // Esperamos a que llegue el primer byte, que corresponde al ID del paquete
@@ -101,10 +101,21 @@ void receiveSignalClient(int socket){
     }
     else if (mensaje.id == 0x07){
       printf("RECIBIENDO PUNTAJE");
+      printf("puntaje jugador 1: %d",content[0]);
+      printf("puntaje jugador 2: %d",content[1]);
+
       //implementar función mostrar puntaje
     }
     else if (mensaje.id == 0x08){
       printf("Who is First. Recibiendo si se inicia jugada ");
+      color_ficha = content[0];
+      printf("Mi color de ficha es %d\n", color_ficha);
+      //ENDGAME
+      
+    }
+    else if (mensaje.id == 0x09){
+      printf("TAblERO \n");
+      imprimir_tablero(content);
       //ENDGAME
       
     }

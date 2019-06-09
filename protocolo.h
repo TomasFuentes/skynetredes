@@ -35,8 +35,10 @@ static int ChartoInt(unsigned char *buffer) {
     for( int j = 0; j < 8; j++ ){
         bool aux = getBit(*buffer, j);
         if (aux){
+            printf("1\n");
             retorno = retorno + valor;
         }
+        else{printf("0\n");}
         valor = valor *2;
     }
     return retorno;
@@ -123,8 +125,8 @@ unsigned char* generar_mensaje(int id, char *texto){
     ret = (unsigned char *)malloc(sizeof(unsigned char) * 3);
     ret[0] = type_id;
     ret[1] = payload;
-    int a = atoi(texto);
-    ret[2] = a;
+    content = (unsigned char *) texto;
+    ret[2] = content[0];
   }
 
   else if(id == 9){ //Board State (64 bytes representando el tablero)
@@ -299,6 +301,14 @@ void array_to_string(int* array, char * buff, int array_len){
     n += sprintf (&buff[n], "%d", array[array_len-1]);
     // printf ("s = %s\n", s);
 }
+
+void imprimir_tablero(char* tablero){
+      for(int i = 0; i<8; i++){
+        for (int j = 0; j<8; j++){
+              printf(" %i | ",tablero[i*8 + j]);}
+        printf("\n");
+      }
+  }
 
 //void main() {
   //generar_mensaje(1, "");

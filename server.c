@@ -195,8 +195,40 @@ int main(int argc, char *argv[])
         }
     }
     socket_server = initializeServer(IP, port);
+    int puntaje_jugador1 = 10;
+    int puntaje_jugador2 = 56;
+    //char buff1[1];
+    //char buff2[1];
+    //memcpy(buff1, &puntaje_jugador1, 4);
+    //printf("pr: %d\n", buff1[0] );
+    //memcpy(buff2, &puntaje_jugador2, 4);
+    //printf("pr: %d\n", buff2[0] );
+    char content[2];
+    content[0] = puntaje_jugador1;
+    content[1] = puntaje_jugador2;
+    printf("pr: %d\n", content[0] );
+    printf("pr: %d\n", content[1] );  
+    int id_jugador1 = 1;
+    int id_jugador2 = 2;
+    char whos_first_1[1];
+    char whos_first_2[1];
+    whos_first_1[0] = id_jugador1;
+    whos_first_2[0] = id_jugador2;
+    printf("pr1: %d\n", whos_first_1[0]);
+    printf("pr2: %d\n", whos_first_2[0]);  
+    int jugador_actual = 0; // Parte jugando el 1..   (falta aleatorio)
+    char tablero[64];
+    for(int i = 0; i<64; i++){tablero[i] = 0;}
+    imprimir_tablero(tablero);
+     //sprintf (buff1, "%d", puntaje_jugador1);
+    //sprintf (buff2, "%d", puntaje_jugador2);
+    //printf("Contenido 1: %s\n", buff1);
+    //printf("Contenido 2: %s\n", buff2);
+    //strncat(buff1,buff2,2);
+    //printf("Contenido 1: %d\n", buff1[1]);
+    //printf("Contenido 1: %d\n", buff1[2]);
+    int *cli_sockfd = (int*)malloc(2*sizeof(int)); /* Client sockets */
     while (1) {
-            int *cli_sockfd = (int*)malloc(2*sizeof(int)); /* Client sockets */
             memset(cli_sockfd, 0, 2*sizeof(int));
             /* Get two clients connected. */
             get_clients(socket_server, cli_sockfd);
@@ -206,5 +238,17 @@ int main(int argc, char *argv[])
             // NoTIFIAR INICIO JUEGO A CLIENTES.
             sendSignal(cli_sockfd[0],generar_mensaje(0x06,"Inicio Juego"));
             sendSignal(cli_sockfd[1],generar_mensaje(0x06,"Inicio Juego"));
+            // se mandan puntajes iniciales correspondientes a cada usuario
+            sendSignal(cli_sockfd[0],generar_mensaje(0x07,content));
+            sendSignal(cli_sockfd[1],generar_mensaje(0x07,content));      
+            // se mandan WHOS FIRST correspondientes a cada usuario
+            sendSignal(cli_sockfd[0],generar_mensaje(0x08,whos_first_1));
+            sendSignal(cli_sockfd[1],generar_mensaje(0x08,whos_first_2));
+            break;
         }
+    while(1){
+      // se manda tablero a usuario que corresponde jugar
+      sendSignal(cli_sockfd[jugador_actual],generar_mensaje(0x09,tablero));
+      receiveSignal(cli_sockfd[jugador_actual]);
+      break;    }
 }
