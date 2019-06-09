@@ -35,3 +35,22 @@ Conversión en char tablero, por cada byte, se cambia el int por las siguientes 
 
 6 -> "X" 
 
+Por ahora se reciben posiciones como (i,j) númericas, falta cambiar i a letra.("A","B",..)
+
+
+
+
+Para compilar:
+
+Abrir server: 
+
+gcc -o server client.c
+
+./server -i "0.0.0.0" -p 4000
+
+Abrir dos terminales con:
+
+gcc -o cliente1 client.c
+
+./cliente1 -i "0.0.0.0" -p 4000
+
