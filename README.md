@@ -21,4 +21,10 @@ Estos archivos representan al servidor y al cliente. Ambos tienen las siguientes
 
 
 
-
+Conversión en char tablero, por cada byte, se cambia el int por las siguientes letras:
+1 -> "b"
+2 -> "n"
+3 -> "o"
+4 -> "O"
+5 -> "z"
+6 -> "X" 
