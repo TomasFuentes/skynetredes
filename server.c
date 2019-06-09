@@ -131,6 +131,7 @@ void receiveSignal(int socket){
       printf("Si la respuesta es sí debe agregarlo denuevo como jugador");
       printf("Respuesta es %d ",content[0]);
       respuesta_juego = respuesta_juego + content[0];
+      printf(" Respuesa juego %d\n", respuesta_juego);
     }
 
     free(content);
@@ -310,7 +311,8 @@ int main(int argc, char *argv[])
                 receiveSignal(cli_sockfd[0]);
                 receiveSignal(cli_sockfd[1]);  
                 if (respuesta_juego == 2){ // suma de las respuestas
-                  jugar_denuevo == 1;
+                  printf("JUGAR DE NUEVO\n");
+                  jugar_denuevo = 1;
                   respuesta_juego = 0;   
                 }  
                 else{
@@ -318,8 +320,8 @@ int main(int argc, char *argv[])
                   sendSignal(cli_sockfd[1],generar_mensaje(0x12,"DESCONECTA"));                    
                 }   
               }
-            }
-        break; }
+           break;  }
+        }
         }
       if (jugar_denuevo == 0){
         printf("NO\n");
