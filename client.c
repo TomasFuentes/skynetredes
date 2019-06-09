@@ -143,6 +143,9 @@ void receiveSignalClient(int socket){
     else if (mensaje.id == 0x0b){
         printf("Jugada inválida, intente nuevamente..\n");
     }
+    else if (mensaje.id == 0x0c){
+        printf("Jugada VÁLIDA\n");
+    }
     free(content);
 }
 

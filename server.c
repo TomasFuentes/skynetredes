@@ -62,6 +62,7 @@ void sendSignal(int socket, char* package){
 char Nickname1 [255] = "-1";
 char Nickname2 [255] = "-1";
 int jugada_valida = 1; // 0: si jugada no es válida, 1: jugada válida
+int ganador = 1; // 0: si NO GANO, 1: SI  GANO
 void receiveSignal(int socket){
     printf("Waiting message... \n");
     // Esperamos a que llegue el primer byte, que corresponde al ID del paquete
@@ -112,6 +113,17 @@ void receiveSignal(int socket){
       // cambiar variable jugada_valida
       // En caso de jugada inválida..
       jugada_valida = 0;
+      // En caso de jugada inválida
+      jugada_valida = 1;
+      // se revisa si gano
+      if (jugada_valida == 1){
+        // se actualiza puntaje
+        printf("Jugada Válida \n");
+        // revisa si gano
+        // cambia variable ganador..
+        // Si no gana
+        ganador = 0;
+      }
     }
     else if (mensaje.id == 0x10){
       printf("Si la respuesta es sí debe agregarlo denuevo como jugador");
@@ -200,9 +212,9 @@ int main(int argc, char *argv[])
     socket_server = initializeServer(IP, port);
     int puntaje_jugador1 = 10;
     int puntaje_jugador2 = 56;
-    char content[2];
-    content[0] = puntaje_jugador1;
-    content[1] = puntaje_jugador2;
+    char Puntajes[2];
+    Puntajes[0] = puntaje_jugador1;
+    Puntajes[1] = puntaje_jugador2;
     int id_jugador1 = 1;
     int id_jugador2 = 2;
     char whos_first_1[1];
@@ -231,8 +243,8 @@ int main(int argc, char *argv[])
             sendSignal(cli_sockfd[0],generar_mensaje(0x06,"Inicio Juego"));
             sendSignal(cli_sockfd[1],generar_mensaje(0x06,"Inicio Juego"));
             // se mandan puntajes iniciales correspondientes a cada usuario
-            sendSignal(cli_sockfd[0],generar_mensaje(0x07,content));
-            sendSignal(cli_sockfd[1],generar_mensaje(0x07,content));      
+            sendSignal(cli_sockfd[0],generar_mensaje(0x07,Puntajes));
+            sendSignal(cli_sockfd[1],generar_mensaje(0x07,Puntajes));      
             // se mandan WHOS FIRST correspondientes a cada usuario
             sendSignal(cli_sockfd[0],generar_mensaje(0x08,whos_first_1));
             sendSignal(cli_sockfd[1],generar_mensaje(0x08,whos_first_2));
@@ -243,12 +255,25 @@ int main(int argc, char *argv[])
       sendSignal(cli_sockfd[jugador_actual],generar_mensaje(0x09,tablero));
       // Servidor recibe jugada de cliente
       receiveSignal(cli_sockfd[jugador_actual]);
-      // En funcion de recibir señal se determino si jugada es valida o no
+      // En funcion de recibir señal se determino si jugada es valida o no, y si gano o no, y se actualiza el puntaje
       //si jugada es invalida, jugada_valida sera igual a 0. Luego se realizan acciones según esta variable
       if (jugada_valida == 0){
         sendSignal(cli_sockfd[jugador_actual],generar_mensaje(0x0b,"Jugada inválida"));
         //se vuelve al principio del loop..
       }
-      else{receiveSignal(cli_sockfd[jugador_actual]);} 
+      // jugada válida:
+      else{
+        sendSignal(cli_sockfd[jugador_actual],generar_mensaje(0x0c,"Jugada válida"));
+        // se revisa si gano, si no gana, se cambia turno de jugador
+        if (ganador == 0){
+          if (jugador_actual == 0){jugador_actual = 1;}
+          else{jugador_actual = 0;}
+          // se mandan puntajes a jugadores:
+            // se mandan puntajes iniciales correspondientes a cada usuario
+          sendSignal(cli_sockfd[0],generar_mensaje(0x07,Puntajes));
+          sendSignal(cli_sockfd[1],generar_mensaje(0x07,Puntajes));      
+          // se vuelve a inicio para que comience jugada el jugador correspondiente
          }
+        }
+      }
 }
