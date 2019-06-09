@@ -222,6 +222,7 @@ int main(int argc, char *argv[])
     whos_first_1[0] = id_jugador1;
     whos_first_2[0] = id_jugador2;
     int jugador_actual = 0; // Parte jugando el 1..   (falta aleatorio)
+    // crear tablero
     char tablero[64];
     for(int i = 0; i<8; i++){
         for (int j = 0; j<8; j++){
@@ -230,8 +231,10 @@ int main(int argc, char *argv[])
           else {tablero[i*8 + j] = 2;}
         }
       }
+    //
     imprimir_tablero(tablero);
     int *cli_sockfd = (int*)malloc(2*sizeof(int)); /* Client sockets */
+    // Conexion
     while (1) {
             memset(cli_sockfd, 0, 2*sizeof(int));
             /* Get two clients connected. */
@@ -250,12 +253,13 @@ int main(int argc, char *argv[])
             sendSignal(cli_sockfd[1],generar_mensaje(0x08,whos_first_2));
             break;
         }
+    // Juego
     while(1){
       // se manda tablero a usuario que corresponde jugar
       sendSignal(cli_sockfd[jugador_actual],generar_mensaje(0x09,tablero));
       // Servidor recibe jugada de cliente
       receiveSignal(cli_sockfd[jugador_actual]);
-      // En funcion de recibir señal se determino si jugada es valida o no, y si gano o no, y se actualiza el puntaje
+      // En funcion de ReceiveSignal se determino si jugada es valida o no, si gano o no, y se actualizo el puntaje
       //si jugada es invalida, jugada_valida sera igual a 0. Luego se realizan acciones según esta variable
       if (jugada_valida == 0){
         sendSignal(cli_sockfd[jugador_actual],generar_mensaje(0x0b,"Jugada inválida"));
@@ -265,15 +269,22 @@ int main(int argc, char *argv[])
       else{
         sendSignal(cli_sockfd[jugador_actual],generar_mensaje(0x0c,"Jugada válida"));
         // se revisa si gano, si no gana, se cambia turno de jugador
+        ganador = 1; // Para probar casos.. después se elimina
         if (ganador == 0){
-          if (jugador_actual == 0){jugador_actual = 1;}
-          else{jugador_actual = 0;}
+          if (jugador_actual == 0){
+            jugador_actual = 1;}
+          else{
+            jugador_actual = 0;}
           // se mandan puntajes a jugadores:
-            // se mandan puntajes iniciales correspondientes a cada usuario
           sendSignal(cli_sockfd[0],generar_mensaje(0x07,Puntajes));
           sendSignal(cli_sockfd[1],generar_mensaje(0x07,Puntajes));      
           // se vuelve a inicio para que comience jugada el jugador correspondiente
          }
+
+        if (ganador == 1){ 
+          sendSignal(cli_sockfd[0],generar_mensaje(0x0d,"Termino Partida"));
+          sendSignal(cli_sockfd[1],generar_mensaje(0x0d,"Termino Partida"));   
+        }
         }
       }
 }

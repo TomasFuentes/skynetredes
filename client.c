@@ -146,6 +146,9 @@ void receiveSignalClient(int socket){
     else if (mensaje.id == 0x0c){
         printf("Jugada VÁLIDA\n");
     }
+    else if (mensaje.id == 0x0d){
+        printf("Término Partida\n");
+    }
     free(content);
 }
 
