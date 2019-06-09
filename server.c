@@ -63,6 +63,7 @@ char Nickname1 [255] = "-1";
 char Nickname2 [255] = "-1";
 int jugada_valida = 1; // 0: si jugada no es válida, 1: jugada válida
 int ganador = 1; // 0: si NO GANO, 1: SI  GANO
+int empate = 0; // 0: No hay empate, 1: sihay empate
 void receiveSignal(int socket){
     printf("Waiting message... \n");
     // Esperamos a que llegue el primer byte, que corresponde al ID del paquete
@@ -270,6 +271,7 @@ int main(int argc, char *argv[])
         sendSignal(cli_sockfd[jugador_actual],generar_mensaje(0x0c,"Jugada válida"));
         // se revisa si gano, si no gana, se cambia turno de jugador
         ganador = 1; // Para probar casos.. después se elimina
+        empate = 0; // Para probar casos.. después se elimina
         if (ganador == 0){
           if (jugador_actual == 0){
             jugador_actual = 1;}
@@ -284,6 +286,16 @@ int main(int argc, char *argv[])
         if (ganador == 1){ 
           sendSignal(cli_sockfd[0],generar_mensaje(0x0d,"Termino Partida"));
           sendSignal(cli_sockfd[1],generar_mensaje(0x0d,"Termino Partida"));   
+          // Enviar señal de ganador a jugadores
+          char ganador[1];
+          if (empate == 0){   
+              ganador[0] = 0;  
+          }
+          else{
+            ganador[0] = jugador_actual + 1; // para corresponder numero de enunciado..
+          }
+          sendSignal(cli_sockfd[0],generar_mensaje(0x0e,ganador));
+          sendSignal(cli_sockfd[1],generar_mensaje(0x0e,ganador));    
         }
         }
       }

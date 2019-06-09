@@ -96,8 +96,7 @@ void receiveSignalClient(int socket){
     }
     else if (mensaje.id == 0x06){
       printf("COMENZANDO JUEGO");
-      //OPERACIONES DE INICIO DE JUEGO (RECIBIR TABLERO y DESPLEGARLO y mostrar scores)
-      //crear funcion desplegar tablero.
+
     }
     else if (mensaje.id == 0x07){
       printf("RECIBIENDO PUNTAJE");
@@ -148,6 +147,9 @@ void receiveSignalClient(int socket){
     }
     else if (mensaje.id == 0x0d){
         printf("Término Partida\n");
+    }
+    else if (mensaje.id == 0x0e){
+        printf("Ganador: %d\n", content[0]);
     }
     free(content);
 }
