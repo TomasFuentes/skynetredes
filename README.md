@@ -54,3 +54,5 @@ gcc -o cliente1 client.c
 
 ./cliente1 -i "0.0.0.0" -p 4000
 
+Aumentar en 1 4000 si ya se ocupo puerto
+
