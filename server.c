@@ -218,7 +218,13 @@ int main(int argc, char *argv[])
     printf("pr2: %d\n", whos_first_2[0]);  
     int jugador_actual = 0; // Parte jugando el 1..   (falta aleatorio)
     char tablero[64];
-    for(int i = 0; i<64; i++){tablero[i] = 0;}
+    for(int i = 0; i<8; i++){
+        for (int j = 0; j<8; j++){
+          int par = (i+j)%2;
+          if (par == 0){tablero[i*8 + j] = 1;}
+          else {tablero[i*8 + j] = 2;}
+        }
+      }
     imprimir_tablero(tablero);
      //sprintf (buff1, "%d", puntaje_jugador1);
     //sprintf (buff2, "%d", puntaje_jugador2);

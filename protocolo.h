@@ -305,7 +305,13 @@ void array_to_string(int* array, char * buff, int array_len){
 void imprimir_tablero(char* tablero){
       for(int i = 0; i<8; i++){
         for (int j = 0; j<8; j++){
-              printf(" %i | ",tablero[i*8 + j]);}
+          if (tablero[i*8 + j] == 1){ printf(" b | ");}
+          if (tablero[i*8 + j] == 2){ printf(" n | ");}
+          if (tablero[i*8 + j] == 3){ printf(" o | ");}
+          if (tablero[i*8 + j] == 4){ printf(" O | ");}
+          if (tablero[i*8 + j] == 5){ printf(" x | ");}
+          if (tablero[i*8 + j] == 6){ printf(" X | ");}
+          }
         printf("\n");
       }
   }
