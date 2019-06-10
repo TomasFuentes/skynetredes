@@ -7,6 +7,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include "protocolo.h"
+#include "board.c"
 
 int socket_client;
 int conectados = 0;
@@ -131,16 +132,20 @@ void receiveSignalClient(int socket){
         if (termino_juego == 0){
           int i_actual;
           int j_actual; 
+          char ja[255];
+          char jp[255];
           int i_a_poner; 
           int j_a_poner;
-          printf("Posicion i actual: \n");
+          printf("Letra columna actual: \n");
+          scanf("%s", ja);
+          printf("Posicion fila i actual: \n");
           scanf("%d", &i_actual);
-          printf("Posicion j actual: \n");
-          scanf("%d", &j_actual);
-          printf("Posicion i a poner: \n");
+          printf("Letra columna a poner: \n");
+          scanf("%s", jp);
+          printf("Posicion fila i a poner: \n");
           scanf("%d", &i_a_poner);
-          printf("Posicion j a poner: \n");
-          scanf("%d", &j_a_poner);
+          j_actual = letter_to_number1(ja);
+          j_a_poner = letter_to_number1(jp);
           char posiciones_a_mandar[4]; 
           posiciones_a_mandar[0] = i_actual;
           posiciones_a_mandar[1] = j_actual;
@@ -169,25 +174,29 @@ void receiveSignalClient(int socket){
         scanf("%d", &respuesta2);
         if (respuesta2 == 1){
           if (termino_juego == 0){
-            int i_actual;
-            int j_actual; 
-            int i_a_poner; 
-            int j_a_poner;
-            printf("Posicion i actual: \n");
-            scanf("%d", &i_actual);
-            printf("Posicion j actual: \n");
-            scanf("%d", &j_actual);
-            printf("Posicion i a poner: \n");
-            scanf("%d", &i_a_poner);
-            printf("Posicion j a poner: \n");
-            scanf("%d", &j_a_poner);
-            char posiciones_a_mandar[4]; 
-            posiciones_a_mandar[0] = i_actual;
-            posiciones_a_mandar[1] = j_actual;
-            posiciones_a_mandar[2] = i_a_poner;
-            posiciones_a_mandar[3] = j_a_poner;
-            sendMessage(socket_client,generar_mensaje(0x0a,posiciones_a_mandar));
-            fin_turno = 1;
+          int i_actual;
+          int j_actual; 
+          char ja[255];
+          char jp[255];
+          int i_a_poner; 
+          int j_a_poner;
+          printf("Letra columna actual: \n");
+          scanf("%s", ja);
+          printf("Posicion fila i actual: \n");
+          scanf("%d", &i_actual);
+          printf("Letra columna a poner: \n");
+          scanf("%s", jp);
+          printf("Posicion fila i a poner: \n");
+          scanf("%d", &i_a_poner);
+          j_actual = letter_to_number1(ja);
+          j_a_poner = letter_to_number1(jp);
+          char posiciones_a_mandar[4]; 
+          posiciones_a_mandar[0] = i_actual;
+          posiciones_a_mandar[1] = j_actual;
+          posiciones_a_mandar[2] = i_a_poner;
+          posiciones_a_mandar[3] = j_a_poner;
+          sendMessage(socket_client,generar_mensaje(0x0a,posiciones_a_mandar));
+          fin_turno = 1;
           }
         }
         else if (respuesta2 ==0){

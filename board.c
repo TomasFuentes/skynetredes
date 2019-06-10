@@ -106,6 +106,45 @@ int letter_to_number(char s) // funcion que transforma la letra del tablero dada
     return 100;
 }
 
+
+int letter_to_number1(char* s) // funcion que transforma la letra del tablero dada por el cliente al entero de la posicion correspondiente
+{
+    if (strcmp(s,"A") == 0)
+    {
+        return 1;
+    }
+    else if (strcmp(s,"B") == 0)
+    {
+        return 2;
+    }
+    else if (strcmp(s,"C") == 0)
+    {
+        return 3;
+    }
+    else if (strcmp(s,"D") == 0)
+    {
+        return 4;
+    }
+    else if (strcmp(s,"E") == 0)
+    {
+        return 5;
+    }
+    else if (strcmp(s,"F") == 0)
+    {
+        return 6;
+    }
+    else if (strcmp(s,"G") == 0)
+    {
+        return 7;
+    }
+    else if (strcmp(s,"H") == 0)
+    {
+        return 8;
+    } 
+    
+    return 100;
+}
+
 bool board_move(Board* board, int from_1, int from_2, int to_1, int to_2) // funcion que recibe el origen y destino del movimiento dados por el cliente y valida y realiza el movimiento
 {
     int from_row = from_1 - 1; // al numero le resta 1 y lo deja como fila
