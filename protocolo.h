@@ -35,8 +35,10 @@ static int ChartoInt(unsigned char *buffer) {
     for( int j = 0; j < 8; j++ ){
         bool aux = getBit(*buffer, j);
         if (aux){
+            printf("1\n");
             retorno = retorno + valor;
         }
+        else{printf("0\n");}
         valor = valor *2;
     }
     return retorno;
@@ -123,8 +125,8 @@ unsigned char* generar_mensaje(int id, char *texto){
     ret = (unsigned char *)malloc(sizeof(unsigned char) * 3);
     ret[0] = type_id;
     ret[1] = payload;
-    int a = atoi(texto);
-    ret[2] = a;
+    content = (unsigned char *) texto;
+    ret[2] = content[0];
   }
 
   else if(id == 9){ //Board State (64 bytes representando el tablero)
@@ -198,10 +200,9 @@ type_id = 0x10;
 payload = 0x01;
 ret = (unsigned char *)malloc(sizeof(unsigned char) * 3);
 //content = (bool *) texto; // no sabemos si se puede hace reso
-int a = atoi(texto);
 ret[0] = type_id;
 ret[1] = payload;
-ret[2] = a;
+ret[2] = texto[0];
 }
 
 else if (id == 17){// Disconnected
@@ -224,6 +225,7 @@ else if (id == 19){//Send Message
   type_id = 0x13;
   len = strlen(texto);
   payload = (unsigned char)len;
+  content = (unsigned char *) texto;
   ret = (unsigned char *)malloc(sizeof(unsigned char) * (len + 2));
   ret[0] = type_id;
   ret[1] = payload;
@@ -235,6 +237,7 @@ else if (id == 20){// Spread Message.
   type_id = 0x14;
   len = strlen(texto);
   payload = (unsigned char)len;
+  content = (unsigned char *) texto;
   ret = (unsigned char *)malloc(sizeof(unsigned char) * (len + 2));
   ret[0] = type_id;
   ret[1] = payload;
@@ -260,11 +263,11 @@ Message message_init(int id, char* texto){
     }
   }
   else if(message.id == 7){
-    message.int_array[0] =ChartoInt(msg[0]);
-    message.int_array[1] =ChartoInt(msg[1]);
+    message.int_array[0] = msg[2];
+    message.int_array[1] = msg[3];
   }
   else if (message.id == 8 || message.id ==14|| message.id == 16){
-    message.int_content = ChartoInt(msg);
+    message.int_content = msg[2];
   }
   return message;
 }
@@ -280,11 +283,11 @@ Message read_message(unsigned char id, unsigned char payload, unsigned char* msg
     }
   }
   else if(message.id == 7){
-    message.int_array[0] =ChartoInt(msg[0]);
-    message.int_array[1] =ChartoInt(msg[1]);
+    message.int_array[0] = msg[0];
+    message.int_array[1] = msg[1];
   }
   else if (message.id == 8 || message.id ==14|| message.id == 16){
-    message.int_content = ChartoInt(msg[1]);
+    message.int_content = msg[1];
   }
   return message;
 }
@@ -299,6 +302,20 @@ void array_to_string(int* array, char * buff, int array_len){
     n += sprintf (&buff[n], "%d", array[array_len-1]);
     // printf ("s = %s\n", s);
 }
+
+void imprimir_tablero(char* tablero){
+      for(int i = 0; i<8; i++){
+        for (int j = 0; j<8; j++){
+          if (tablero[i*8 + j] == 1){ printf(" b | ");}
+          if (tablero[i*8 + j] == 2){ printf(" n | ");}
+          if (tablero[i*8 + j] == 3){ printf(" o | ");}
+          if (tablero[i*8 + j] == 4){ printf(" O | ");}
+          if (tablero[i*8 + j] == 5){ printf(" x | ");}
+          if (tablero[i*8 + j] == 6){ printf(" X | ");}
+          }
+        printf("\n");
+      }
+  }
 
 //void main() {
   //generar_mensaje(1, "");
