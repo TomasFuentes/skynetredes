@@ -127,13 +127,25 @@ void receiveSignal(int socket){
         ganador = 0;
       }
     }
+    else if (mensaje.id == 0x0b){
+      printf("desconectado");
+    }
     else if (mensaje.id == 0x10){
       printf("Si la respuesta es sí debe agregarlo denuevo como jugador");
       printf("Respuesta es %d ",content[0]);
       respuesta_juego = respuesta_juego + content[0];
       printf(" Respuesa juego %d\n", respuesta_juego);
     }
+    else if (mensaje.id == 0x13){
+      printf("Mensaje recibido desde el cliente");
+      printf("Enviando mensaje al recepetor");
+      //sendSignal(socket, generar_mensaje(0x14,content));
+    }
 
+    else {
+      printf("Error bad package");
+      sendSignal(socket, generar_mensaje(0x12,"ID desconocido"));
+    }
     free(content);
 }
 
@@ -301,8 +313,8 @@ int main(int argc, char *argv[])
               sendSignal(cli_sockfd[1],generar_mensaje(0x07,Puntajes));  
               if (ganador == 0){
                 // SE DESCONECTA SIN PREGUNTAR
-                sendSignal(cli_sockfd[0],generar_mensaje(0x12,"DESCONECTA"));
-                sendSignal(cli_sockfd[1],generar_mensaje(0x12,"DESCONECTA"));            
+                sendSignal(cli_sockfd[0],generar_mensaje(0x11,"DESCONECTA"));
+                sendSignal(cli_sockfd[1],generar_mensaje(0x11,"DESCONECTA"));            
               } 
               // ASK NEW GAME
               else{
@@ -316,8 +328,8 @@ int main(int argc, char *argv[])
                   respuesta_juego = 0;   
                 }  
                 else{
-                  sendSignal(cli_sockfd[0],generar_mensaje(0x12,"DESCONECTA"));
-                  sendSignal(cli_sockfd[1],generar_mensaje(0x12,"DESCONECTA"));                    
+                  sendSignal(cli_sockfd[0],generar_mensaje(0x11,"DESCONECTA"));
+                  sendSignal(cli_sockfd[1],generar_mensaje(0x11,"DESCONECTA"));                    
                 }   
               }
            break;  }

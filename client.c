@@ -117,31 +117,85 @@ void receiveSignalClient(int socket){
     }
     else if (mensaje.id == 0x09){
       printf("TAblERO \n");
+      int fin_turno =0;
       imprimir_tablero(content);
-      if (termino_juego == 0){
-      int i_actual;
-      int j_actual; 
-      int i_a_poner; 
-      int j_a_poner;
-      printf("Posicion i actual: \n");
-      scanf("%d", &i_actual);
-      printf("Posicion j actual: \n");
-      scanf("%d", &j_actual);
-      printf("Posicion i a ponr: \n");
-      scanf("%d", &i_a_poner);
-      printf("Posicion a a poner: \n");
-      scanf("%d", &j_a_poner);
-      char posiciones_a_mandar[4]; 
-      posiciones_a_mandar[0] = i_actual;
-      posiciones_a_mandar[1] = j_actual;
-      posiciones_a_mandar[2] = i_a_poner;
-      posiciones_a_mandar[3] = j_a_poner;
-      sendMessage(socket_client,generar_mensaje(0x0a,posiciones_a_mandar));
+      int respuesta;
+      printf("¿Que deseas hacer?\n");
+      printf("(1) Mover Ficha\n");
+      printf("(2) Enviar Mensaje\n");
+      printf("(0) Desconectarse\n");
+      scanf("%d", &respuesta);
+      if (respuesta == 1){
+        if (termino_juego == 0){
+          int i_actual;
+          int j_actual; 
+          int i_a_poner; 
+          int j_a_poner;
+          printf("Posicion i actual: \n");
+          scanf("%d", &i_actual);
+          printf("Posicion j actual: \n");
+          scanf("%d", &j_actual);
+          printf("Posicion i a poner: \n");
+          scanf("%d", &i_a_poner);
+          printf("Posicion j a poner: \n");
+          scanf("%d", &j_a_poner);
+          char posiciones_a_mandar[4]; 
+          posiciones_a_mandar[0] = i_actual;
+          posiciones_a_mandar[1] = j_actual;
+          posiciones_a_mandar[2] = i_a_poner;
+          posiciones_a_mandar[3] = j_a_poner;
+          sendMessage(socket_client,generar_mensaje(0x0a,posiciones_a_mandar));
+          fin_turno = 1;
+        }
       }
-
-
-      //ENDGAME
-      
+      else if (respuesta == 2){
+        char mensaje[255];
+        printf("Escriba el mensaje a enviar\n");
+        scanf("%s", mensaje);
+        sendMessage(socket_client,generar_mensaje(0x13,mensaje));
+      }
+      else if (respuesta ==0){
+        printf("Desconectandose\n");
+        sendMessage(socket_client,generar_mensaje(0x11,"DESCONECTA"));
+        desconeccion = 1;
+        fin_turno = 1;
+      }
+      if (fin_turno == 0){
+        int respuesta2;
+        printf("¿Que deseas hacer?\n");
+        printf("(1) Mover Ficha\n");
+        printf("(0) Desconectarse\n");
+        scanf("%d", &respuesta2);
+        if (respuesta2 == 1){
+          if (termino_juego == 0){
+            int i_actual;
+            int j_actual; 
+            int i_a_poner; 
+            int j_a_poner;
+            printf("Posicion i actual: \n");
+            scanf("%d", &i_actual);
+            printf("Posicion j actual: \n");
+            scanf("%d", &j_actual);
+            printf("Posicion i a poner: \n");
+            scanf("%d", &i_a_poner);
+            printf("Posicion j a poner: \n");
+            scanf("%d", &j_a_poner);
+            char posiciones_a_mandar[4]; 
+            posiciones_a_mandar[0] = i_actual;
+            posiciones_a_mandar[1] = j_actual;
+            posiciones_a_mandar[2] = i_a_poner;
+            posiciones_a_mandar[3] = j_a_poner;
+            sendMessage(socket_client,generar_mensaje(0x0a,posiciones_a_mandar));
+            fin_turno = 1;
+          }
+        }
+        else if (respuesta2 ==0){
+          printf("Desconectandose\n");
+          sendMessage(socket_client,generar_mensaje(0x11,"DESCONECTA"));
+          fin_turno = 1;
+          desconeccion = 1;
+        }
+      }
     }
     else if (mensaje.id == 0x0b){
         printf("Jugada inválida, intente nuevamente..\n");
@@ -167,6 +221,10 @@ void receiveSignalClient(int socket){
     else if (mensaje.id == 0x12){
         printf("DESCONECCIÓN");
         desconeccion = 1;
+    }
+    else if (mensaje.id == 0x14){
+      printf("Mensaje recibido:\n");
+      printf("%s\n", content);
     }
     free(content);
 }
