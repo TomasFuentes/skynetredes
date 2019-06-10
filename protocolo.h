@@ -225,6 +225,7 @@ else if (id == 19){//Send Message
   type_id = 0x13;
   len = strlen(texto);
   payload = (unsigned char)len;
+  content = (unsigned char *) texto;
   ret = (unsigned char *)malloc(sizeof(unsigned char) * (len + 2));
   ret[0] = type_id;
   ret[1] = payload;
@@ -236,6 +237,7 @@ else if (id == 20){// Spread Message.
   type_id = 0x14;
   len = strlen(texto);
   payload = (unsigned char)len;
+  content = (unsigned char *) texto;
   ret = (unsigned char *)malloc(sizeof(unsigned char) * (len + 2));
   ret[0] = type_id;
   ret[1] = payload;

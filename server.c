@@ -12,7 +12,7 @@
 #include "protocolo.h"
 
 int cantidad_jugadores = 0;
-
+FILE* fichero;
 /* Función que inicializa el servidor en el port
 con ip */
 int initializeServer(char* ip, int port){
@@ -57,6 +57,11 @@ void sendSignal(int socket, char* package){
   // Obtenemos el largo del payload para saber qué tamaño tiene el paquete y cuántos bytes debe enviar mi socket
   int payloadSize = package[1];
   send(socket, package, 2 + payloadSize, 0);
+  fprintf(fichero,"%s %d  ","TIMESTAMP:",(int)time(NULL));
+  fprintf(fichero,"ID: %d  ",package[0]);
+  fputs("CONTENIDO: ",fichero);
+  fputs(package,fichero);
+  fputc('\n', fichero);
 }
 
 char Nickname1 [255] = "-1";
@@ -66,6 +71,7 @@ int ganador = 1; // 0: si NO GANO, 1: SI  GANO
 int empate = 0; // 0: No hay empate, 1: sihay empate
 int respuesta_juego = 0;
 char mensaje_chat [255];
+int desconectado_enmedio = 0;
 void receiveSignal(int socket){
     printf("Waiting message... \n");
     // Esperamos a que llegue el primer byte, que corresponde al ID del paquete
@@ -136,6 +142,9 @@ void receiveSignal(int socket){
       respuesta_juego = respuesta_juego + content[0];
       printf(" Respuesa juego %d\n", respuesta_juego);
     }
+    else if (mensaje.id == 0x11){
+      desconectado_enmedio = 1;
+    }
     else if (mensaje.id == 0x13){
       printf("Mensaje recibido desde el cliente");
       printf("Enviando mensaje al recepetor");
@@ -148,6 +157,11 @@ void receiveSignal(int socket){
       printf("Error bad package");
       sendSignal(socket, generar_mensaje(0x12,"ID desconocido"));
     }
+    fprintf(fichero,"%s %d  ","TIMESTAMP:",(int)time(NULL));
+    fprintf(fichero,"ID: %d  ",mensaje.id);
+    fputs("CONTENIDO: ",fichero);
+    fputs(content,fichero);
+    fputc('\n', fichero);
     free(content);
 }
 
@@ -186,6 +200,7 @@ void get_clients(int lis_sockfd, int * cli_sockfd)
 int main(int argc, char *argv[])
 {
     /* Make sure a port was specified. */
+    fichero = fopen("log.txt","wt");
     char *IP;
     int port;
     int with_log = 0;
@@ -277,6 +292,11 @@ int main(int argc, char *argv[])
           sendSignal(cli_sockfd[otro_jugador], generar_mensaje(0x14,mensaje_chat));
           receiveSignal(cli_sockfd[jugador_actual]);
         }
+        if (desconectado_enmedio ==1){
+          sendSignal(cli_sockfd[0],generar_mensaje(0x11,"DESCONECTA"));
+          sendSignal(cli_sockfd[1],generar_mensaje(0x11,"DESCONECTA")); 
+          break;     
+        }
         // En funcion de ReceiveSignal se determino si jugada es valida o no, si gano o no, y se actualizo el puntaje
         //si jugada es invalida, jugada_valida sera igual a 0. Luego se realizan acciones según esta variable
         if (jugada_valida == 0){
@@ -353,4 +373,5 @@ int main(int argc, char *argv[])
         break;
       }
     }
+  fclose(fichero);
 }

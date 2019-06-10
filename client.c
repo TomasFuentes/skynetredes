@@ -83,42 +83,44 @@ void receiveSignalClient(int socket){
     // Aqui se las ingenian para ver como retornan todo. Puden retornar el paquete y separarlo afuera, o retornar una struct.
     Message mensaje = read_message(ID,payloadSize,content);
     if (mensaje.id == 0x02){
-        printf("SE INICIA CONEXIÓN CON EL SERVIDOR");
+        printf("###### SE INICIA CONEXIÓN CON EL SERVIDOR ######\n");
     }
     else if (mensaje.id == 0x03){
-        printf("ENTREGAR NICKNAME");
+        printf("###### ENTREGAR NICKNAME ######\n");
+        printf("Escribe tu nickname: ");
         char nickname[255];
         scanf("%s", nickname);
         printf("%s\n", nickname);
         sendMessage(socket_client,generar_mensaje(0x04,nickname));
     }
     else if (mensaje.id == 0x05){
-      printf("OPONENTE ENCONTRADO");
+      printf("####### OPONENTE ENCONTRADO #####\n");
       printf("%s\n", content);
     }
     else if (mensaje.id == 0x06){
-      printf("COMENZANDO JUEGO");
+      printf("####### COMENZANDO JUEGO #######\n");
       termino_juego = 0;
 
     }
     else if (mensaje.id == 0x07){
-      printf("RECIBIENDO PUNTAJE");
-      printf("puntaje jugador 1: %d",content[0]);
-      printf("puntaje jugador 2: %d",content[1]);
+      printf("######### RECIBIENDO PUNTAJE #######\n");
+      printf("puntaje jugador 1: %d \n",content[0]);
+      printf("puntaje jugador 2: %d \n",content[1]);
 
       //implementar función mostrar puntaje
     }
     else if (mensaje.id == 0x08){
-      printf("Who is First. Recibiendo si se inicia jugada ");
+      printf("Who is First. Recibiendo si se inicia jugada\n ");
       color_ficha = content[0];
       printf("Mi color de ficha es %d\n", color_ficha);
       //ENDGAME
       
     }
     else if (mensaje.id == 0x09){
-      printf("TAblERO \n");
+      printf("---------- TABLERO ----------- \n");
       int fin_turno =0;
       imprimir_tablero(content);
+      printf("------------------------------ \n");
       int respuesta;
       printf("¿Que deseas hacer?\n");
       printf("(1) Mover Ficha\n");
@@ -149,15 +151,14 @@ void receiveSignalClient(int socket){
         }
       }
       else if (respuesta == 2){
-        char mensaje [255];
+        char mensaje_chat [255];
         printf("Escriba el mensaje a enviar\n");
-        scanf("%s", mensaje);
-        sendMessage(socket_client,generar_mensaje(0x13,"VIALCHUPAELPICO"));
+        scanf("%s", mensaje_chat);
+        sendMessage(socket_client,generar_mensaje(0x13,mensaje_chat));
       }
       else if (respuesta ==0){
         printf("Desconectandose\n");
         sendMessage(socket_client,generar_mensaje(0x11,"DESCONECTA"));
-        desconeccion = 1;
         fin_turno = 1;
       }
       if (fin_turno == 0){
@@ -193,7 +194,6 @@ void receiveSignalClient(int socket){
           printf("Desconectandose\n");
           sendMessage(socket_client,generar_mensaje(0x11,"DESCONECTA"));
           fin_turno = 1;
-          desconeccion = 1;
         }
       }
     }
@@ -218,15 +218,21 @@ void receiveSignalClient(int socket){
         posiciones_a_mandar[0] = respuesta;
         sendMessage(socket_client,generar_mensaje(0x10, posiciones_a_mandar));
     }
-    else if (mensaje.id == 0x12){
-        printf("DESCONECCIÓN");
+    else if (mensaje.id == 0x11){
+        printf("####### DESCONECCIÓN #######\n");
         desconeccion = 1;
     }
     else if (mensaje.id == 0x14){
+      printf("#################\n");
       printf("Mensaje recibido:\n");
       printf("%s\n", content);
+      printf("#################\n");
+    }
+    else if (mensaje.id == 0x12){
+        printf("####### Bad Package ########");
     }
     free(content);
+    
 }
 
 
@@ -275,23 +281,14 @@ int main(int argc, char *argv[])
        exit(0);
     }
     unsigned char msg[1024];
-    printf("Poker \n------------\n");
+    printf("DAMAS. \n------------\n");
     char nickname[256]; // nombre del jugador
-    char * opp_nickname; // nombre del contrincante
-    int balance; // saldo del jugador
-    int hand[10]; // cartas en la mano del jugador
-    int first; // quien va primero, puede ser 1 o 2
-    char * bet_mapping[5] = {"FOLD", "$0", "$100", "$200", "$500"};
-    int * bets; // contiene las apuestas disponibles, mandadas por el servidor
-    int message_len; // contiene el largo del arreglo bets
-    int * opp_hand; // cartas del contrincante
     int winner; // contiene 1 si gané, 2 si perdí
 
     Message message;
 
 
     while(1) {
-        printf("waiting\n");
         // RECIBE SEÑAL DE SERVIDOR
         receiveSignalClient(socket_client);
         if (desconeccion == 1){
