@@ -149,10 +149,10 @@ void receiveSignalClient(int socket){
         }
       }
       else if (respuesta == 2){
-        char mensaje[255];
+        char mensaje [255];
         printf("Escriba el mensaje a enviar\n");
         scanf("%s", mensaje);
-        sendMessage(socket_client,generar_mensaje(0x13,mensaje));
+        sendMessage(socket_client,generar_mensaje(0x13,"VIALCHUPAELPICO"));
       }
       else if (respuesta ==0){
         printf("Desconectandose\n");
@@ -210,7 +210,7 @@ void receiveSignalClient(int socket){
     else if (mensaje.id == 0x0e){
         printf("Ganador: %d\n", content[0]);
     }
-    else if (mensaje.id == 0x0F){
+    else if (mensaje.id == 0x0f){
         printf("ASK NEW GAME: \n ");
         int respuesta;
         scanf("%d", &respuesta); // 1 Ó 0..
